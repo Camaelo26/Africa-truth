@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Map Quiz</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <script type="text/javascript" src="mapdata1.js"></script>
+    <script type="text/javascript" src="worldmap1.js"></script>
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            background: linear-gradient(135deg, #000000 0%, #bfbfbf 100%);
+            color: #333;
+        }
+        header {
+            background-color: #fff;
+            color: #333;
+            padding: 1rem;
+            text-align: center;
+            position: relative;
+            z-index: 2;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .back-button {
+            background-color: #fff;
+            border: none;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+        .back-button:hover {
+            color: #fda085;
+        }
+        h1 {
+            margin: 0;
+            font-size: 2rem;
+        }
+        .map-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex: 1;
+            position: relative;
+            z-index: 1;
+            padding: 1rem;
+        }
+        #map {
+            width: 100%;
+            height: 100%;
+            max-width: 1000px;
+            max-height: 600px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            background-color: rgb(129, 129, 129);
+        }
+        .quiz-container {
+            text-align: center;
+            padding: 1rem;
+            background-color: #808080;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-bottom: 1rem;
+            border-radius: 8px;
+        }
+        .quiz-question {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        .country-name {
+            font-weight: bold;
+            color: #7b1b00;
+        }
+        .quiz-feedback {
+            font-size: 1.2rem;
+            margin-top: 1rem;
+            transition: color 0.3s ease;
+        }
+        footer {
+            text-align: center;
+            padding: 1rem;
+        }
+        button {
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            cursor: pointer;
+            background-color: #333;
+            color: rgb(113, 97, 97);
+            border: none;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.3s ease, transform 0.1s ease;
+        }
+        button:hover {
+            background-color: #444;
+        }
+        button:active {
+            background-color: #222;
+            transform: scale(0.95);
+        }
+    </style>
+    <script>
+        const countries = Object.keys(simplemaps_worldmap_mapdata.state_specific);
+        let currentCountry;
+        let totalQuestions = 5;
+        let currentQuestion = 0;
+        let score = 0;
+        let questionInProgress = false;
+
+        function getRandomCountry() {
+            return countries[Math.floor(Math.random() * countries.length)];
+        }
+
+        function startQuiz() {
+            currentQuestion = 0;
+            score = 0;
+            document.getElementById('start-container').style.display = 'none';
+            document.getElementById('quiz-container').style.display = 'block';
+            nextQuestion();
+        }
+
+        function nextQuestion() {
+            if (currentQuestion >= totalQuestions) {
+                endQuiz();
+                return;
+            }
+            currentCountry = getRandomCountry();
+            const countryName = simplemaps_worldmap_mapdata.state_specific[currentCountry].chose;
+            document.getElementById('quiz-question').innerHTML = `Select <span class="country-name">${countryName}</span> on the map.`;
+            document.getElementById('quiz-feedback').innerText = '';
+            questionInProgress = true;
+            currentQuestion++;
+        }
+
+        function checkAnswer(selectedCountry) {
+            if (!questionInProgress) return;
+
+            const feedback = document.getElementById('quiz-feedback');
+            if (selectedCountry === currentCountry) {
+                feedback.style.color = 'green';
+                feedback.innerText = 'Correct!';
+                score++;
+            } else {
+                feedback.style.color = 'red';
+                feedback.innerText = 'Wrong.';
+            }
+            questionInProgress = false;
+            setTimeout(nextQuestion, 1000);
+        }
+
+        function endQuiz() {
+            document.getElementById('quiz-container').style.display = 'none';
+            document.getElementById('result-container').style.display = 'block';
+
+            let feedbackMessage;
+            if (totalQuestions === 5) {
+                if (score >= 4) {
+                    feedbackMessage = "Excellent! You have a great knowledge of Africa geography, be proud!";
+                } else if (score >= 3) {
+                    feedbackMessage = "Good job! But you can still improve your africa knowledge.";
+                } else {
+                    feedbackMessage = "you still thinking the capital of Africa is Nigeria. do better!";
+                }
+            } else if (totalQuestions === 10) {
+                if (score >= 8) {
+                    feedbackMessage = "Outstanding! You're an Africa geography expert!";
+                } else if (score >= 5) {
+                    feedbackMessage = "Come on! You can do better ";
+                } else {
+                    feedbackMessage = "look like you think Africa is a country, do better.";
+                }
+            }
+
+            document.getElementById('score').innerText = `You scored ${score} out of ${totalQuestions}. ${feedbackMessage}`;
+        }
+
+        document.addEventListener("DOMContentLoaded", function() {
+            simplemaps_worldmap.hooks.click_state = function(id) {
+                checkAnswer(id);
+            };
+            simplemaps_worldmap.load();
+        });
+    </script>
+</head>
+<body>
+    <header>
+        <button class="back-button" onclick="window.location.href='map.html'"><i class="fas fa-arrow-left"></i> Back</button>
+        <h1>Map Quiz</h1>
+    </header>
+    <div id="start-container" class="quiz-container">
+        <div class="quiz-question">How many questions do you want to answer?</div>
+        <button onclick="totalQuestions = 5; startQuiz();">5 Questions</button>
+        <button onclick="totalQuestions = 10; startQuiz();">10 Questions</button>
+    </div>
+    <div id="quiz-container" class="quiz-container" style="display: none;">
+        <div id="quiz-question" class="quiz-question"></div>
+        <div id="quiz-feedback" class="quiz-feedback"></div>
+    </div>
+    <div id="result-container" class="quiz-container" style="display: none;">
+        <div id="score" class="quiz-question"></div>
+        <button onclick="window.location.reload();">Play Again</button>
+    </div>
+    <div class="map-container">
+        <div id="map"></div>
+    </div>
+</body>
+</html>
