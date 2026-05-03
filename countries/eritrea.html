@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-W1LKM277BL"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-W1LKM277BL');
+</script>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Political History of Eritrea</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body { background: linear-gradient(135deg, #1a0a00 0%, #001a0a 50%, #0a001a 100%) fixed; background-size: cover; color: #ffffff; }
+        .container { background-color: rgba(0,0,0,0.7); padding: 50px; border-radius: 10px; }
+        .video-title { font-size: 1.2em; margin-top: 10px; margin-bottom: 10px; }
+        .navbar { background-color: #343a40; }
+        .navbar-brand, .nav-link { color: #ffffff !important; }
+        .footer { background-color: #343a40; color: #ffffff; padding: 10px 0; text-align: center; }
+        .modal-body { color: #000000; }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <a class="navbar-brand" href="#">Eritrea</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"><span class="navbar-toggler-icon"></span></button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item"><a class="nav-link" href="map.html">Map</a></li>
+                <li class="nav-item"><a class="nav-link" href="#" data-toggle="modal" data-target="#aboutModal">About</a></li>
+            </ul>
+        </div>
+    </nav>
+    <div class="container mt-4">
+        <h1 class="mt-5 text-center">Political History of Eritrea</h1>
+        <p class="text-center">Explore the political history of Eritrea through these curated videos.</p>
+        <div class="row">
+            <div class="col-md-6 mb-4">
+                <div class="embed-responsive embed-responsive-16by9">
+                    <iframe class="embed-responsive-item" src="https://www.youtube.com/embed/iDCH5N1SikU" allowfullscreen></iframe>
+                </div>
+                <p class="video-title text-center">Isaias Afwerki's Eritrea: Africa's Most Hidden Country</p>
+            </div>
+            <div class="col-md-6 mb-4">
+                <div class="embed-responsive embed-responsive-16by9">
+                    <iframe class="embed-responsive-item" src="https://www.youtube.com/embed/p9kKOl07OuA" allowfullscreen></iframe>
+                </div>
+                <p class="video-title text-center">Isaias Afwerki: Africa's Kim Jong Un?</p>
+            </div>
+            <div class="col-md-6 mb-4">
+                <div class="embed-responsive embed-responsive-16by9">
+                    <iframe class="embed-responsive-item" src="https://www.youtube.com/embed/CJ1Rvz8SYNU" allowfullscreen></iframe>
+                </div>
+                <p class="video-title text-center">Isaias Afwerki: Dictator Who Has Ruled Eritrea for 31 Years</p>
+            </div>
+            <div class="col-md-6 mb-4">
+                <div class="embed-responsive embed-responsive-16by9">
+                    <iframe class="embed-responsive-item" src="https://www.youtube.com/embed/ESa2Sa5AJfc" allowfullscreen></iframe>
+                </div>
+                <p class="video-title text-center">Is Eritrea's Dictatorship Finally Ending?</p>
+            </div>
+            <div class="col-md-6 mb-4">
+                <div class="embed-responsive embed-responsive-16by9">
+                    <iframe class="embed-responsive-item" src="https://www.youtube.com/embed/UAXKsZ8OsWo" allowfullscreen></iframe>
+                </div>
+                <p class="video-title text-center">Eritrean President Isaias Afwerki: Full Interview</p>
+            </div>
+        </div>
+    </div>
+    <footer class="footer mt-4"><div class="container"><p>&copy; 2024 Eritrea Political History. All rights reserved.</p></div></footer>
+    <div class="modal fade" id="aboutModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog"><div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">About Eritrea</h5>
+                <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+            </div>
+            <div class="modal-body">
+                <p>Eritrea gained independence from Ethiopia in 1993 after a 30-year war of liberation. Since then it has been ruled by President Isaias Afwerki, who has established one of the world's most closed and repressive regimes — sometimes called "Africa's North Korea." The country has no elections, no free press, and enforces indefinite national service.</p>
+                <p>For more information, visit the <a href="https://en.wikipedia.org/wiki/Eritrea" target="_blank">Wikipedia page</a>.</p>
+                <div id="country-info"></div>
+            </div>
+        </div></div>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        fetch('https://restcountries.com/v3.1/name/eritrea')
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                var c = data[0];
+                var info = document.getElementById('country-info');
+                var rows = [
+                    ['Capital', c.capital[0]],
+                    ['Population', c.population.toLocaleString()],
+                    ['Region', c.region + ' — ' + c.subregion],
+                    ['Languages', Object.values(c.languages).join(', ')]
+                ];
+                rows.forEach(function(row) {
+                    var p = document.createElement('p');
+                    var strong = document.createElement('strong');
+                    strong.textContent = row[0] + ': ';
+                    p.appendChild(strong);
+                    p.appendChild(document.createTextNode(row[1]));
+                    info.appendChild(p);
+                });
+            }).catch(function() {});
+    </script>
+</body>
+</html>

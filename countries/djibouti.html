@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-W1LKM277BL"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-W1LKM277BL');
+</script>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Political History of Djibouti</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body { background: linear-gradient(135deg, #1a1000 0%, #001a1a 50%, #1a0010 100%) fixed; background-size: cover; color: #ffffff; }
+        .container { background-color: rgba(0,0,0,0.7); padding: 50px; border-radius: 10px; }
+        .video-title { font-size: 1.2em; margin-top: 10px; margin-bottom: 10px; }
+        .navbar { background-color: #343a40; }
+        .navbar-brand, .nav-link { color: #ffffff !important; }
+        .footer { background-color: #343a40; color: #ffffff; padding: 10px 0; text-align: center; }
+        .modal-body { color: #000000; }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <a class="navbar-brand" href="#">Djibouti</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"><span class="navbar-toggler-icon"></span></button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item"><a class="nav-link" href="map.html">Map</a></li>
+                <li class="nav-item"><a class="nav-link" href="#" data-toggle="modal" data-target="#aboutModal">About</a></li>
+            </ul>
+        </div>
+    </nav>
+    <div class="container mt-4">
+        <h1 class="mt-5 text-center">Political History of Djibouti</h1>
+        <p class="text-center">Explore the political history of Djibouti through these curated videos.</p>
+        <div class="row">
+            <div class="col-md-6 mb-4">
+                <div class="embed-responsive embed-responsive-16by9">
+                    <iframe class="embed-responsive-item" src="https://www.youtube.com/embed/RQ_VinWN2Y0" allowfullscreen></iframe>
+                </div>
+                <p class="video-title text-center">Djibouti Explained in 14 Minutes: History, Geography, Culture</p>
+            </div>
+            <div class="col-md-6 mb-4">
+                <div class="embed-responsive embed-responsive-16by9">
+                    <iframe class="embed-responsive-item" src="https://www.youtube.com/embed/fq3vmMuE1RI" allowfullscreen></iframe>
+                </div>
+                <p class="video-title text-center">The History of Djibouti: The Epic of the Horn of Africa</p>
+            </div>
+            <div class="col-md-6 mb-4">
+                <div class="embed-responsive embed-responsive-16by9">
+                    <iframe class="embed-responsive-item" src="https://www.youtube.com/embed/FAkL4dfrTVs" allowfullscreen></iframe>
+                </div>
+                <p class="video-title text-center">What Is Djibouti's Role in the Horn of Africa?</p>
+            </div>
+            <div class="col-md-6 mb-4">
+                <div class="embed-responsive embed-responsive-16by9">
+                    <iframe class="embed-responsive-item" src="https://www.youtube.com/embed/Lu0SO-dlBFk" allowfullscreen></iframe>
+                </div>
+                <p class="video-title text-center">Sudan, Ethiopia, Somalia, Djibouti: Shifts in the Horn of Africa</p>
+            </div>
+            <div class="col-md-6 mb-4">
+                <div class="embed-responsive embed-responsive-16by9">
+                    <iframe class="embed-responsive-item" src="https://www.youtube.com/embed/HEKenTz7YZE" allowfullscreen></iframe>
+                </div>
+                <p class="video-title text-center">Djibouti: A Window to Africa's Strategic and Cultural Riches</p>
+            </div>
+            <div class="col-md-6 mb-4">
+                <div class="embed-responsive embed-responsive-16by9">
+                    <iframe class="embed-responsive-item" src="https://www.youtube.com/embed/PKT3NIFcIQ8" allowfullscreen></iframe>
+                </div>
+                <p class="video-title text-center">A Super Quick History of Djibouti</p>
+            </div>
+        </div>
+    </div>
+    <footer class="footer mt-4"><div class="container"><p>&copy; 2024 Djibouti Political History. All rights reserved.</p></div></footer>
+    <div class="modal fade" id="aboutModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog"><div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">About Djibouti</h5>
+                <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+            </div>
+            <div class="modal-body">
+                <p>Djibouti gained independence from France in 1977. One of Africa's smallest countries, it sits at one of the world's most strategically important maritime chokepoints — the Bab-el-Mandeb strait. It hosts military bases from the US, France, China, Japan, and Italy. President Ismail Omar Guelleh has ruled since 1999, maintaining stability but limiting political freedoms.</p>
+                <p>For more information, visit the <a href="https://en.wikipedia.org/wiki/Djibouti" target="_blank">Wikipedia page</a>.</p>
+                <div id="country-info"></div>
+            </div>
+        </div></div>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        fetch('https://restcountries.com/v3.1/name/djibouti')
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                var c = data[0];
+                var info = document.getElementById('country-info');
+                var rows = [
+                    ['Capital', c.capital[0]],
+                    ['Population', c.population.toLocaleString()],
+                    ['Region', c.region + ' — ' + c.subregion],
+                    ['Languages', Object.values(c.languages).join(', ')]
+                ];
+                rows.forEach(function(row) {
+                    var p = document.createElement('p');
+                    var strong = document.createElement('strong');
+                    strong.textContent = row[0] + ': ';
+                    p.appendChild(strong);
+                    p.appendChild(document.createTextNode(row[1]));
+                    info.appendChild(p);
+                });
+            }).catch(function() {});
+    </script>
+</body>
+</html>
