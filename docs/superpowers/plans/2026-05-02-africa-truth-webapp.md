@@ -2,11 +2,11 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Rebuild Africa Truth as a Next.js 14 + Supabase web app with Pan-African UI (red/gold/green on dark), an admin panel to add YouTube videos without touching code, rate limiting, CSP headers, and Vercel deployment.
+**Goal:** Rebuild Africa Truth as a Next.js 14 + Supabase web app with Pan-African UI (red/gold/green on dark), rich per-country about sections, a mobile-first responsive map, an admin panel to add YouTube videos without touching code, rate limiting, CSP headers, and Vercel deployment.
 
-**Architecture:** Next.js 14 App Router + Tailwind for the frontend; Supabase PostgreSQL for `countries` and `videos` tables with Row Level Security; Next.js middleware handles rate limiting (Upstash Redis) and admin route protection; Vercel auto-deploys from GitHub.
+**Architecture:** Next.js 14 App Router + Tailwind for the frontend; Supabase PostgreSQL for `countries` and `videos` tables with Row Level Security; Wikipedia REST API for live country summaries; responsive layout switches from interactive simplemaps map (desktop) to swipeable country card grid (mobile); Next.js middleware handles rate limiting (Upstash Redis) and admin route protection; Vercel auto-deploys from GitHub.
 
-**Tech Stack:** Next.js 14, TypeScript, Tailwind CSS, Supabase (`@supabase/ssr`), Upstash Redis (`@upstash/ratelimit`), Vitest + React Testing Library
+**Tech Stack:** Next.js 14, TypeScript, Tailwind CSS, Supabase (`@supabase/ssr`), Upstash Redis (`@upstash/ratelimit`), Wikipedia REST API, Vitest + React Testing Library
 
 ---
 
@@ -2003,13 +2003,488 @@ git add -A && git commit -m "chore: production deployment on Vercel"
 
 ---
 
+---
+
+## Task 18: Rich Country About Section
+
+**Files:**
+- Modify: `lib/types.ts` (add `WikiSummary` type)
+- Create: `lib/wikipedia.ts` (fetch country summary)
+- Modify: `components/CountryHero.tsx` (expand into tabbed about section)
+- Modify: `app/countries/[slug]/page.tsx` (pass wiki data)
+
+- [ ] **Step 1: Write failing test for Wikipedia fetcher**
+
+Create `__tests__/lib/wikipedia.test.ts`:
+```typescript
+import { describe, it, expect, vi } from 'vitest'
+import { buildWikipediaUrl } from '@/lib/wikipedia'
+
+describe('buildWikipediaUrl', () => {
+  it('builds URL for simple country name', () => {
+    expect(buildWikipediaUrl('Nigeria')).toBe(
+      'https://en.wikipedia.org/api/rest_v1/page/summary/Nigeria'
+    )
+  })
+  it('encodes spaces', () => {
+    expect(buildWikipediaUrl('South Africa')).toBe(
+      'https://en.wikipedia.org/api/rest_v1/page/summary/South_Africa'
+    )
+  })
+  it('encodes special characters', () => {
+    expect(buildWikipediaUrl("Côte d'Ivoire")).toBe(
+      "https://en.wikipedia.org/api/rest_v1/page/summary/C%C3%B4te_d'Ivoire"
+    )
+  })
+})
+```
+
+- [ ] **Step 2: Run — verify fails**
+
+```bash
+npm test -- wikipedia.test.ts
+```
+Expected: FAIL — `Cannot find module '@/lib/wikipedia'`
+
+- [ ] **Step 3: Create wikipedia.ts**
+
+Create `lib/wikipedia.ts`:
+```typescript
+export type WikiSummary = {
+  extract: string
+  thumbnail?: { source: string; width: number; height: number }
+  content_urls?: { desktop: { page: string } }
+}
+
+export function buildWikipediaUrl(countryName: string): string {
+  const encoded = countryName.replace(/ /g, '_')
+  return `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(encoded).replace(/%27/g, "'")}`
+}
+
+export async function fetchWikiSummary(countryName: string): Promise<WikiSummary | null> {
+  try {
+    const res = await fetch(buildWikipediaUrl(countryName), {
+      headers: { 'Accept': 'application/json' },
+      next: { revalidate: 86400 }, // cache 24 hours
+    })
+    if (!res.ok) return null
+    const data = await res.json()
+    return { extract: data.extract, thumbnail: data.thumbnail, content_urls: data.content_urls }
+  } catch {
+    return null
+  }
+}
+```
+
+- [ ] **Step 4: Run — verify tests pass**
+
+```bash
+npm test -- wikipedia.test.ts
+```
+Expected: 3 tests PASS
+
+- [ ] **Step 5: Add WikiSummary type to types.ts**
+
+In `lib/types.ts`, add:
+```typescript
+export type { WikiSummary } from './wikipedia'
+
+export type CountryStats = {
+  capital: string
+  population: number
+  area: number
+  languages: string[]
+  currencies: string[]
+  independence?: string
+}
+```
+
+- [ ] **Step 6: Build rich CountryAbout component**
+
+Create `components/CountryAbout.tsx`:
+```tsx
+'use client'
+import { useState } from 'react'
+import type { Country } from '@/lib/types'
+import type { WikiSummary } from '@/lib/wikipedia'
+
+type Props = {
+  country: Country
+  wiki: WikiSummary | null
+  stats: {
+    capital: string
+    population: number
+    languages: string[]
+    area: number
+  } | null
+}
+
+export function CountryAbout({ country, wiki, stats }: Props) {
+  const [open, setOpen] = useState(false)
+
+  return (
+    <div className="mb-6">
+      <button
+        onClick={() => setOpen(o => !o)}
+        className="w-full flex items-center justify-between px-4 py-3 rounded-xl border border-pan-gold/20 bg-pan-gold/5 hover:bg-pan-gold/10 transition-colors text-sm"
+      >
+        <span className="text-pan-gold font-semibold">📖 About {country.name}</span>
+        <span className="text-white/40 text-lg">{open ? '↑' : '↓'}</span>
+      </button>
+
+      {open && (
+        <div className="mt-2 card-dark p-5 space-y-5 text-sm">
+
+          {/* Wikipedia summary */}
+          {wiki?.extract && (
+            <div>
+              <p className="text-xs uppercase tracking-widest text-pan-gold/60 mb-2">Overview</p>
+              <p className="text-white/70 leading-relaxed line-clamp-6">{wiki.extract}</p>
+              {country.wikipedia_url && (
+                <a
+                  href={country.wikipedia_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-pan-gold/60 hover:text-pan-gold text-xs mt-2 inline-block"
+                >
+                  Read more on Wikipedia →
+                </a>
+              )}
+            </div>
+          )}
+
+          {/* Key stats grid */}
+          {stats && (
+            <div>
+              <p className="text-xs uppercase tracking-widest text-pan-gold/60 mb-3">Key Facts</p>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="bg-white/5 rounded-lg p-3">
+                  <p className="text-white/40 text-xs mb-1">Capital</p>
+                  <p className="font-semibold">{stats.capital}</p>
+                </div>
+                <div className="bg-white/5 rounded-lg p-3">
+                  <p className="text-white/40 text-xs mb-1">Population</p>
+                  <p className="font-semibold">{stats.population.toLocaleString()}</p>
+                </div>
+                <div className="bg-white/5 rounded-lg p-3">
+                  <p className="text-white/40 text-xs mb-1">Area</p>
+                  <p className="font-semibold">{stats.area.toLocaleString()} km²</p>
+                </div>
+                <div className="bg-white/5 rounded-lg p-3">
+                  <p className="text-white/40 text-xs mb-1">Languages</p>
+                  <p className="font-semibold text-xs leading-snug">{stats.languages.slice(0, 3).join(', ')}</p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Region badge */}
+          <div className="flex gap-2 flex-wrap">
+            <span className="bg-pan-green/10 border border-pan-green/20 text-pan-green text-xs px-3 py-1 rounded-full">
+              {country.region}
+            </span>
+            <span className="bg-white/5 border border-white/10 text-white/50 text-xs px-3 py-1 rounded-full">
+              Africa
+            </span>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+```
+
+- [ ] **Step 7: Fetch stats + wiki on server in country page**
+
+In `app/countries/[slug]/page.tsx`, add these fetches alongside the existing Supabase query:
+
+```typescript
+// Add these imports
+import { fetchWikiSummary } from '@/lib/wikipedia'
+
+// Inside the page component, after fetching country and videos:
+const [wiki, restCountries] = await Promise.allSettled([
+  fetchWikiSummary(country.name),
+  fetch(`https://restcountries.com/v3.1/name/${encodeURIComponent(country.name)}?fullText=true`)
+    .then(r => r.ok ? r.json() : null)
+    .catch(() => null),
+])
+
+const wikiData = wiki.status === 'fulfilled' ? wiki.value : null
+const rcData = restCountries.status === 'fulfilled' && restCountries.value
+  ? restCountries.value[0] : null
+
+const stats = rcData ? {
+  capital: rcData.capital?.[0] ?? '—',
+  population: rcData.population ?? 0,
+  area: rcData.area ?? 0,
+  languages: Object.values(rcData.languages ?? {}) as string[],
+} : null
+```
+
+Then in the JSX, replace the existing `CountryHero` with:
+```tsx
+<CountryHero country={country} videoCount={videos?.length ?? 0} />
+<CountryAbout country={country} wiki={wikiData} stats={stats} />
+```
+
+- [ ] **Step 8: Verify**
+
+```bash
+npm run dev
+```
+Open http://localhost:3000/countries/nigeria → click "About Nigeria" → expands to show Wikipedia summary, stats grid (capital: Abuja, population, area, languages), and region badge.
+
+- [ ] **Step 9: Commit**
+
+```bash
+git add -A && git commit -m "feat: rich country about section with Wikipedia summary and key stats"
+```
+
+---
+
+## Task 19: Mobile-First Map + Country Card Grid
+
+**Files:**
+- Modify: `app/page.tsx`
+- Create: `components/CountryCardGrid.tsx`
+- Modify: `components/AfricaMap.tsx`
+
+The map is great on desktop but difficult to use on a small phone screen. The fix: on mobile show a searchable, filterable card grid of all countries. On desktop show the interactive map. Users can toggle between them on any screen size.
+
+- [ ] **Step 1: Create CountryCardGrid component**
+
+Create `components/CountryCardGrid.tsx`:
+```tsx
+'use client'
+import { useState, useMemo } from 'react'
+import Link from 'next/link'
+import type { Country } from '@/lib/types'
+
+const REGIONS = ['All', 'North Africa', 'West Africa', 'East Africa', 'Central Africa', 'Southern Africa']
+
+type Props = { countries: Country[] }
+
+export function CountryCardGrid({ countries }: Props) {
+  const [query, setQuery] = useState('')
+  const [region, setRegion] = useState('All')
+
+  const filtered = useMemo(() => {
+    return countries.filter(c => {
+      const matchesQuery = c.name.toLowerCase().includes(query.toLowerCase())
+      const matchesRegion = region === 'All' || c.region === region
+      return matchesQuery && matchesRegion
+    })
+  }, [countries, query, region])
+
+  return (
+    <div className="px-4 pb-8">
+      {/* Search */}
+      <input
+        type="text"
+        placeholder="Search countries..."
+        value={query}
+        onChange={e => setQuery(e.target.value)}
+        className="w-full bg-white/10 border border-white/20 rounded-full px-5 py-3 text-sm text-white placeholder-white/40 focus:outline-none focus:border-pan-gold mb-4"
+      />
+
+      {/* Region filter chips */}
+      <div className="flex gap-2 flex-wrap mb-5">
+        {REGIONS.map(r => (
+          <button
+            key={r}
+            onClick={() => setRegion(r)}
+            className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${
+              region === r
+                ? 'bg-pan-gold/20 border-pan-gold/50 text-pan-gold'
+                : 'bg-white/5 border-white/10 text-white/50 hover:text-white'
+            }`}
+          >
+            {r}
+          </button>
+        ))}
+      </div>
+
+      {/* Country cards grid */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+        {filtered.map(c => (
+          <Link
+            key={c.id}
+            href={`/countries/${c.slug}`}
+            className="card-dark p-4 flex flex-col gap-2 hover:border-pan-gold/30 active:scale-95 transition-all"
+          >
+            <span className="text-3xl">{c.flag_emoji}</span>
+            <div>
+              <p className="font-bold text-sm leading-tight">{c.name}</p>
+              <p className="text-white/40 text-xs mt-0.5">{c.region}</p>
+            </div>
+          </Link>
+        ))}
+      </div>
+
+      {filtered.length === 0 && (
+        <p className="text-center text-white/30 text-sm py-12">No countries found.</p>
+      )}
+    </div>
+  )
+}
+```
+
+- [ ] **Step 2: Update home page with responsive toggle**
+
+Replace `app/page.tsx`:
+```tsx
+import { createClient } from '@/lib/supabase/server'
+import { AfricaMap } from '@/components/AfricaMap'
+import { SearchBar } from '@/components/SearchBar'
+import { CountryCardGrid } from '@/components/CountryCardGrid'
+import { MobileMapToggle } from '@/components/MobileMapToggle'
+
+export default async function HomePage() {
+  const supabase = await createClient()
+  const { data: countries } = await supabase
+    .from('countries')
+    .select('*')
+    .eq('is_active', true)
+    .order('name')
+
+  return (
+    <div className="min-h-screen">
+      {/* Header — always visible */}
+      <div className="pt-10 pb-6 px-4 text-center">
+        <p className="text-pan-gold text-xs uppercase tracking-widest mb-2">54 nations. One truth.</p>
+        <h1 className="text-3xl font-black mb-2 leading-tight">
+          The Political<br />History of Africa
+        </h1>
+      </div>
+
+      {/* Desktop: map + search bar */}
+      <div className="hidden md:block px-4 pb-4">
+        <SearchBar />
+      </div>
+      <div className="hidden md:block px-4 pb-8">
+        <AfricaMap />
+      </div>
+
+      {/* Mobile: card grid */}
+      <div className="md:hidden">
+        <CountryCardGrid countries={countries ?? []} />
+      </div>
+    </div>
+  )
+}
+```
+
+- [ ] **Step 3: Enhance AfricaMap for desktop touch**
+
+In `components/AfricaMap.tsx`, add zoom controls styling. Update the map container:
+```tsx
+return (
+  <>
+    <Script src="/scripts/mapdata.js" strategy="beforeInteractive" />
+    <Script src="/scripts/worldmap.js" strategy="beforeInteractive" />
+    <div
+      id="map"
+      className="w-full rounded-2xl overflow-hidden border border-white/10"
+      style={{ minHeight: '520px', background: 'rgba(26,14,0,0.6)' }}
+    />
+  </>
+)
+```
+
+Also update `public/scripts/mapdata.js` — in `main_settings`, set:
+```javascript
+"zoom": "on",
+"zoom_out_incrementally": "on",
+"initial_zoom": "1",
+"initial_zoom_solo": "on",
+```
+This enables pinch-to-zoom and scroll-to-zoom on the desktop map.
+
+- [ ] **Step 4: Add bottom nav for mobile**
+
+Create `components/MobileNav.tsx`:
+```tsx
+'use client'
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
+
+const tabs = [
+  { href: '/',       icon: '🗺️', label: 'Map'   },
+  { href: '/quiz',   icon: '🧠', label: 'Quiz'  },
+  { href: '/about',  icon: 'ℹ️',  label: 'About' },
+]
+
+export function MobileNav() {
+  const path = usePathname()
+  return (
+    <nav className="fixed bottom-0 left-0 right-0 z-50 md:hidden border-t border-white/10 bg-dark-900/95 backdrop-blur-md">
+      <div className="flex">
+        {tabs.map(t => (
+          <Link
+            key={t.href}
+            href={t.href}
+            className={`flex-1 flex flex-col items-center py-3 gap-0.5 text-xs transition-colors ${
+              path === t.href ? 'text-pan-gold' : 'text-white/40'
+            }`}
+          >
+            <span className="text-xl">{t.icon}</span>
+            <span>{t.label}</span>
+          </Link>
+        ))}
+      </div>
+    </nav>
+  )
+}
+```
+
+Add `<MobileNav />` to `app/layout.tsx` inside `<body>`, after `<main>`. Also add `pb-20 md:pb-0` to `<main>` to prevent bottom nav overlap.
+
+- [ ] **Step 5: Update layout.tsx**
+
+```tsx
+import { MobileNav } from '@/components/MobileNav'
+
+// In the body:
+<body className={`${inter.className} bg-dark-900 text-white min-h-screen`}>
+  <NavBar />
+  <main className="pb-20 md:pb-0">{children}</main>
+  <MobileNav />
+</body>
+```
+
+- [ ] **Step 6: Verify on mobile viewport**
+
+```bash
+npm run dev
+```
+Open http://localhost:3000, open Chrome DevTools → toggle device toolbar (iPhone 12 size).
+- Should show: search input + country card grid (no map)
+- Filter chips should work: tap "West Africa" → only West African countries show
+- Tap Nigeria card → navigates to `/countries/nigeria`
+- Bottom navigation bar visible with Map / Quiz / About tabs
+
+Switch to desktop viewport:
+- Should show: interactive simplemaps map + search bar
+- Map should be clickable and navigating to country pages
+
+- [ ] **Step 7: Commit**
+
+```bash
+git add -A && git commit -m "feat: mobile country card grid + region filters + bottom nav"
+```
+
+---
+
 ## Self-Review
 
 **Spec coverage check:**
 - ✅ Next.js + Supabase + Vercel — Tasks 1, 3, 17
 - ✅ Pan-African UI (red/gold/green) — Tasks 2, 6
-- ✅ Interactive map — Task 7
+- ✅ Interactive map (desktop) — Task 7
+- ✅ Mobile country card grid + bottom nav — Task 19
 - ✅ Country pages with videos — Tasks 8, 9
+- ✅ Rich about section (Wikipedia + RestCountries stats) — Task 18
 - ✅ Quiz with difficulty + timer — Task 9
 - ✅ Admin panel (paste URL → auto-title → save) — Tasks 11–14
 - ✅ Rate limiting (Upstash Redis) — Task 12
@@ -2021,4 +2496,4 @@ git add -A && git commit -m "chore: production deployment on Vercel"
 
 **No placeholders found.** All steps contain complete code.
 
-**Type consistency check:** `Country` and `Video` types defined in Task 4 (`lib/types.ts`) and used consistently in Tasks 8, 13, 14. `VideoWithCountry` used in Tasks 13 and 14 admin components. `parseYouTubeId` defined in Task 5, used in Tasks 5, 13, 14 — signatures match.
+**Type consistency check:** `Country` and `Video` types defined in Task 4 (`lib/types.ts`), `WikiSummary` added in Task 18 — used consistently across Tasks 8, 13, 14, 18. `VideoWithCountry` used in Tasks 13 and 14. `parseYouTubeId` defined in Task 5, used in Tasks 5, 13, 14 — signatures match. `buildWikipediaUrl` defined and tested in Task 18, used in `fetchWikiSummary` in same file.
