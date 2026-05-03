@@ -1,6 +1,8 @@
 # Africa Truth Web App — Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+>
+> **FRONTEND SKILL REQUIREMENT:** Before writing any component or page UI code (Tasks 2, 6, 7, 8, 9, 10, 13, 18, 19), invoke the `frontend-design:frontend-design` skill. This ensures distinctive, production-grade UI — not generic AI output. The Pan-African Vibrant theme (dark background, red #e63946, gold #ffd60a, green #2dc653) is already decided; the skill guides how to apply it with visual quality. Do NOT skip this on any task that touches a component or page.
 
 **Goal:** Rebuild Africa Truth as a Next.js 14 + Supabase web app with Pan-African UI (red/gold/green on dark), rich per-country about sections, a mobile-first responsive map, an admin panel to add YouTube videos without touching code, rate limiting, CSP headers, and Vercel deployment.
 
