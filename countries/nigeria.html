@@ -113,27 +113,71 @@
                 </div>
                 <p class="video-title text-center">How nigeria became corrupted?</p>
             </div>
+            <div class="col-md-6 mb-4">
+                <div class="embed-responsive embed-responsive-16by9">
+                    <iframe class="embed-responsive-item" src="https://www.youtube.com/embed/TggyFUMNtSA?si=VtMPn9cPyBJdaoZY" allowfullscreen></iframe>
+                </div>
+                <p class="video-title text-center">Nigeria's First Bloody Military Coup of 1966</p>
+            </div>
+            <div class="col-md-6 mb-4">
+                <div class="embed-responsive embed-responsive-16by9">
+                    <iframe class="embed-responsive-item" src="https://www.youtube.com/embed/7JCvIvb8PpY?si=YhQApKDFkhTqKkA-" allowfullscreen></iframe>
+                </div>
+                <p class="video-title text-center">An Honest Explanation of the Nigerian Civil War </p>
+            </div>
+            <div class="col-md-6 mb-4">
+                <div class="embed-responsive embed-responsive-16by9">
+                    <iframe class="embed-responsive-item" src="https://www.youtube.com/embed/YDBC_rSreRk" allowfullscreen></iframe>
+                </div>
+                <p class="video-title text-center">The Greatest Money Heist In Nigeria's History</p>
+            </div>
+            <div class="col-md-6 mb-4">
+                <div class="embed-responsive embed-responsive-16by9">
+                    <iframe class="embed-responsive-item" src="https://www.youtube.com/embed/HHNFfNTHRJA?si=EFIL4NH330Cl3qAb" allowfullscreen></iframe>
+                </div>
+                <p class="video-title text-center">1966 Military Coup</p>
+            </div>
+            <div class="col-md-6 mb-4">
+                <div class="embed-responsive embed-responsive-16by9">
+                    <iframe class="embed-responsive-item" src="https://www.youtube.com/embed/GzrrSzA5R9U?si=CxpIlrMRr-a8xdxZ" allowfullscreen></iframe>
+                </div>
+                <p class="video-title text-center">How Every Nigerian President Died</p>
+            </div>
+            <div class="col-md-6 mb-4">
+                <div class="embed-responsive embed-responsive-16by9">
+                    <iframe class="embed-responsive-item" src="https://www.youtube.com/embed/y5VG82ooOgY?si=opNY2SpL8uJNRrjY" allowfullscreen></iframe>
+                </div>
+                <p class="video-title text-center">The Day Abacha Died</p>
+            </div>
+            <div class="col-md-6 mb-4">
+                <div class="embed-responsive embed-responsive-16by9">
+                    <iframe class="embed-responsive-item" src="https://www.youtube.com/embed/NJ5stkLKO6M?si=yVMebL23ei5EZeP7" allowfullscreen></iframe>
+                </div>
+                <p class="video-title text-center">The 1966 Bloody Coup,Biafrans, Political & Tribal Tensions</p>
+            </div>
         </div>
     </div>
 
 
     <!-- About Modal -->
-<div class="modal fade" id="aboutModal" tabindex="-1" aria-labelledby="aboutModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="aboutModalLabel">About Nigeria</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <p>Nigeria, located on the western coast of Africa, is the most populous country on the continent and one of the largest oil producers in the world. It gained independence from Britain in 1960. Nigeria's political history has been marked by a series of military coups and a civil war (the Biafran War) from 1967 to 1970. Despite political instability, Nigeria has a rich cultural heritage with a diverse array of ethnic groups and languages.</p>
+    <div class="modal fade" id="aboutModal" tabindex="-1" aria-labelledby="aboutModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="aboutModalLabel">About Nigeria</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p>Nigeria, located on the western coast of Africa, is the most populous country on the continent and one of the largest oil producers in the world. It gained independence from Britain in 1960. Nigeria's political history has been marked by a series of military coups and a civil war (the Biafran War) from 1967 to 1970. Despite political instability, Nigeria has a rich cultural heritage with a diverse array of ethnic groups and languages.</p>
                 <p>For more detailed information, visit the <a href="https://en.wikipedia.org/wiki/Nigeria" target="_blank">Wikipedia page</a>.</p>
+                    <p id="country-info">Loading data...</p>
+
+                </div>
             </div>
         </div>
     </div>
-</div>
 
     <!-- Footer -->
     <footer class="footer">
@@ -146,5 +190,24 @@
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    
+    <script>
+        // Fetch Nigeria's data from the RestCountries API
+        fetch('https://restcountries.com/v3.1/name/nigeria')
+            .then(response => response.json())
+            .then(data => {
+                const nigeria = data[0];
+                document.getElementById('country-info').innerHTML = `
+                    <p><strong>Country:</strong> ${nigeria.name.common}</p>
+                    <p><strong>Capital:</strong> ${nigeria.capital[0]}</p>
+                    <p><strong>Population:</strong> ${nigeria.population.toLocaleString()}</p>
+                    <p><strong>Region:</strong> ${nigeria.region}</p>
+                    <p><strong>Subregion:</strong> ${nigeria.subregion}</p>
+                    <p><strong>Languages:</strong> ${Object.values(nigeria.languages).join(', ')}</p>
+                `;
+            })
+            .catch(error => console.error('Error fetching country data:', error));
+    </script>
 </body>
 </html>

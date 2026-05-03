@@ -84,6 +84,11 @@
             margin-top: 1rem;
             transition: color 0.3s ease;
         }
+        .timer {
+            font-size: 1.2rem;
+            color: #f00;
+            margin-top: 0.5rem;
+        }
         footer {
             text-align: center;
             padding: 1rem;
@@ -98,6 +103,7 @@
             border-radius: 4px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
             transition: background-color 0.3s ease, transform 0.1s ease;
+            margin: 0.5rem;
         }
         button:hover {
             background-color: #444;
@@ -108,12 +114,17 @@
         }
     </style>
     <script>
-        const countries = Object.keys(simplemaps_worldmap_mapdata.state_specific);
+        const excludedCountries = ["MU", "SC", "KM", "CV", "ST"];
+        const countries = Object.keys(simplemaps_worldmap_mapdata.state_specific).filter(
+            country => !excludedCountries.includes(country)
+        );
         let currentCountry;
         let totalQuestions = 5;
         let currentQuestion = 0;
         let score = 0;
         let questionInProgress = false;
+        let timer;
+        let timeLeft = 30;
 
         function getRandomCountry() {
             return countries[Math.floor(Math.random() * countries.length)];
@@ -138,11 +149,27 @@
             document.getElementById('quiz-feedback').innerText = '';
             questionInProgress = true;
             currentQuestion++;
+            startTimer();
+        }
+
+        function startTimer() {
+            clearInterval(timer);
+            timeLeft = selectedTime; // Reset time for each question
+            document.getElementById('timer').innerText = `Time left: ${timeLeft}s`;
+            timer = setInterval(function() {
+                timeLeft--;
+                document.getElementById('timer').innerText = `Time left: ${timeLeft}s`;
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    checkAnswer(null);
+                }
+            }, 1000);
         }
 
         function checkAnswer(selectedCountry) {
             if (!questionInProgress) return;
 
+            clearInterval(timer);
             const feedback = document.getElementById('quiz-feedback');
             if (selectedCountry === currentCountry) {
                 feedback.style.color = 'green';
@@ -165,21 +192,43 @@
                 if (score >= 4) {
                     feedbackMessage = "Excellent! You have a great knowledge of Africa geography, be proud!";
                 } else if (score >= 3) {
-                    feedbackMessage = "Good job! But you can still improve your africa knowledge.";
+                    feedbackMessage = "Good job! But you can still improve your Africa knowledge.";
                 } else {
-                    feedbackMessage = "you still thinking the capital of Africa is Nigeria. do better!";
+                    feedbackMessage = "You still think the capital of Africa is Nigeria. Do better!";
                 }
             } else if (totalQuestions === 10) {
                 if (score >= 8) {
                     feedbackMessage = "Outstanding! You're an Africa geography expert!";
                 } else if (score >= 5) {
-                    feedbackMessage = "Come on! You can do better ";
+                    feedbackMessage = "Come on! You can do better.";
                 } else {
-                    feedbackMessage = "look like you think Africa is a country, do better.";
+                    feedbackMessage = "Looks like you think Africa is a country. Do better.";
                 }
             }
 
             document.getElementById('score').innerText = `You scored ${score} out of ${totalQuestions}. ${feedbackMessage}`;
+        }
+
+        let selectedTime = 30;
+
+        function setDifficulty(level, time) {
+            selectedTime = time;
+            document.getElementById('difficulty-container').style.display = 'none';
+            document.getElementById('start-container').style.display = 'block';
+        }
+
+        function restartQuiz() {
+            clearInterval(timer);
+            document.getElementById('quiz-container').style.display = 'none';
+            document.getElementById('difficulty-container').style.display = 'block';
+            document.getElementById('result-container').style.display = 'none';
+        }
+
+        function backToDifficulty() {
+            clearInterval(timer);
+            document.getElementById('quiz-container').style.display = 'none';
+            document.getElementById('difficulty-container').style.display = 'block';
+            document.getElementById('start-container').style.display = 'none';
         }
 
         document.addEventListener("DOMContentLoaded", function() {
@@ -195,14 +244,23 @@
         <button class="back-button" onclick="window.location.href='map.html'"><i class="fas fa-arrow-left"></i> Back</button>
         <h1>Map Quiz</h1>
     </header>
-    <div id="start-container" class="quiz-container">
+    <div id="difficulty-container" class="quiz-container">
+        <div class="quiz-question">Select Difficulty Level</div>
+        <button onclick="setDifficulty('beginner', 30);">Beginner (30 seconds per question)</button>
+        <button onclick="setDifficulty('intermediate', 20);">Intermediate (20 seconds per question)</button>
+        <button onclick="setDifficulty('advanced', 10);">Advanced (10 seconds per question)</button>
+    </div>
+    <div id="start-container" class="quiz-container" style="display: none;">
         <div class="quiz-question">How many questions do you want to answer?</div>
         <button onclick="totalQuestions = 5; startQuiz();">5 Questions</button>
         <button onclick="totalQuestions = 10; startQuiz();">10 Questions</button>
+        <button onclick="backToDifficulty();" class="back-button">Change Difficulty</button>
     </div>
     <div id="quiz-container" class="quiz-container" style="display: none;">
         <div id="quiz-question" class="quiz-question"></div>
         <div id="quiz-feedback" class="quiz-feedback"></div>
+        <div id="timer" class="timer"></div>
+        <button onclick="restartQuiz();" class="back-button">Restart Quiz</button>
     </div>
     <div id="result-container" class="quiz-container" style="display: none;">
         <div id="score" class="quiz-question"></div>
@@ -213,3 +271,4 @@
     </div>
 </body>
 </html>
+
